@@ -2,6 +2,7 @@
   "name": "duka-ledger",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",

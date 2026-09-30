@@ -4,13 +4,13 @@ A WhatsApp bot for Kenyan micro-retailers to log sales by sending free-text mess
 
 ## Project Status
 
-**Current Phase:** Phase 0 - Foundation & Repo Setup
+**Current Phase:** Phase 1 - WhatsApp Echo Bot
 
-This is the foundation phase. The project currently has:
-- TypeScript Express project structure
-- Prisma ORM with PostgreSQL schema
-- Health check endpoint
-- Basic test setup
+This phase implements:
+- WhatsApp Business Cloud API webhook integration
+- Message echo functionality to test the WhatsApp pipeline
+- Webhook verification and signature validation
+- Error handling for Meta API failures
 
 ## Prerequisites
 
@@ -63,14 +63,88 @@ This is the foundation phase. The project currently has:
    npx prisma migrate dev
    ```
 
-5. **Run the development server**
+5. **Set up WhatsApp Business Cloud API (Meta)**
+   
+   Follow these steps to configure WhatsApp for the echo bot:
+
+   a. **Create a Meta Developer Account**
+      - Go to [developers.facebook.com](https://developers.facebook.com)
+      - Click "Get Started" and sign up with your Facebook account
+      - Verify your email address
+
+   b. **Create a Meta App**
+      - In the Meta Dashboard, click "Create App"
+      - Select "Business" as the app type
+      - Fill in the app name (e.g., "Duka Ledger Bot")
+      - Add "WhatsApp" as a product
+
+   c. **Configure WhatsApp**
+      - In the WhatsApp section, click "Get Started"
+      - Select your phone number type (choose "Test" for development)
+      - Add a test phone number (your own WhatsApp number)
+      - Meta will send you a verification code via WhatsApp
+
+   d. **Get WhatsApp Credentials**
+      - In the WhatsApp dashboard, you'll find:
+        - **Phone Number ID**: Displayed in the "Phone numbers" section
+        - **Access Token**: Click "Generate" next to "Temporary access token" (valid for 24 hours)
+        - **Webhook Verify Token**: Choose any secure string (e.g., `duka_ledger_secret_123`)
+
+   e. **Add Credentials to .env**
+      ```
+      WHATSAPP_PHONE_NUMBER_ID="your_phone_number_id"
+      WHATSAPP_ACCESS_TOKEN="your_access_token"
+      WHATSAPP_WEBHOOK_VERIFY_TOKEN="your_verify_token"
+      ```
+
+   f. **Set Up Webhook with ngrok (for local testing)**
+      - Install ngrok: `npm install -g ngrok` or download from [ngrok.com](https://ngrok.com)
+      - Start your development server: `npm run dev`
+      - In a new terminal, run: `ngrok http 3000`
+      - Copy the HTTPS URL (e.g., `https://abc123.ngrok.io`)
+
+   g. **Configure Webhook in Meta Dashboard**
+      - In the WhatsApp dashboard, go to "Webhooks" section
+      - Click "Add" next to your phone number
+      - Enter:
+        - **Callback URL**: `https://your-ngrok-url.ngrok.io/webhook/whatsapp`
+        - **Verify Token**: The same string you set in `.env`
+      - Click "Verify and Save"
+      - Subscribe to webhook events: `messages`
+
+   h. **Test the Setup**
+      - Send a WhatsApp message to your test number
+      - You should receive an echo reply: "Got your message: [your text]"
+      - Check your server console for webhook logs
+
+6. **Set up the database**
+   
+   Create a PostgreSQL database named `duka_ledger`:
+   ```bash
+   # Using psql
+   createdb duka_ledger
+   
+   # Or using your PostgreSQL client/interface
+   ```
+   
+   Generate Prisma client:
+   ```bash
+   npx prisma generate
+   ```
+   
+   Run database migrations (when available):
+   ```bash
+   npx prisma migrate dev
+   ```
+
+7. **Run the development server**
    ```bash
    npm run dev
    ```
 
    The server will start on port 3000 (or the port specified in your `.env`).
 
-6. **Verify the setup**
+8. **Verify the setup**
    
    Check the health endpoint:
    ```bash
@@ -85,7 +159,7 @@ This is the foundation phase. The project currently has:
    }
    ```
 
-7. **Run tests**
+9. **Run tests**
    ```bash
    npm test
    ```
@@ -143,8 +217,8 @@ The project uses Prisma ORM with PostgreSQL. The schema includes:
 
 The project will progress through these phases:
 
-1. ✅ Phase 0: Foundation & Repo Setup (Current)
-2. Phase 1: WhatsApp Echo Bot
+1. ✅ Phase 0: Foundation & Repo Setup
+2. 🔄 Phase 1: WhatsApp Echo Bot (Current)
 3. Phase 2: LLM Parser + Manual Ledger
 4. Phase 3: Daraja Sandbox Integration
 5. Phase 4: Reconciliation Engine

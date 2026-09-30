@@ -7,7 +7,7 @@ function createTestApp() {
   const app = express();
   app.use(express.json());
 
-  app.get('/health', async (req, res) => {
+  app.get('/health', async (_req, res) => {
     try {
       // For now, just return OK without DB connection test
       // This will be updated when DB is properly configured
