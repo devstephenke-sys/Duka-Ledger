@@ -1,12 +1,12 @@
 {
   "name": "duka-ledger",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.ts",
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
-    "start": "npm run build && node index.js",
+    "start": "tsx src/index.ts",
     "test": "vitest",
     "test:ui": "vitest --ui"
   },
@@ -18,7 +18,8 @@
     "@anthropic-ai/sdk": "^0.129.0",
     "@prisma/client": "^6.19.3",
     "dotenv": "^18.0.4",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
@@ -28,7 +29,6 @@
     "prisma": "^6.19.3",
     "supertest": "^7.3.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
   }
