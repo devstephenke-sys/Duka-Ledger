@@ -1,6 +1,8 @@
 import express from 'express';
 import crypto from 'node:crypto';
 import whatsappService from '../services/whatsapp.js';
+import parserService from '../services/parser.js';
+import ledgerService from '../services/ledger.js';
 import type { WhatsAppWebhookPayload } from '../types/whatsapp.js';
 
 const router = express.Router();
@@ -56,14 +58,54 @@ router.post('/whatsapp', async (req, res) => {
               
               console.log(`Message from ${from}: ${messageText}`);
 
-              // Echo the message back
-              const echoResponse = await whatsappService.sendMessage(
-                from,
-                `Got your message: ${messageText}`
-              );
+              // Try to parse as a sales message
+              const parseResult = await parserService.parseSalesMessage(messageText);
 
-              if (!echoResponse.success) {
-                console.error('Failed to send echo reply:', echoResponse.error);
+              if (parseResult.success && parseResult.sale) {
+                // Get or create business
+                const businessResult = await ledgerService.getOrCreateBusiness(from);
+                
+                if (businessResult.success && businessResult.data) {
+                  // Record the sale
+                  const recordResult = await ledgerService.recordSale(
+                    businessResult.data.id,
+                    parseResult.sale,
+                    messageText
+                  );
+
+                  if (recordResult.success) {
+                    // Send confirmation message
+                    const items = parseResult.sale.items
+                      .map(item => `${item.quantity}x ${item.productName}`)
+                      .join(', ');
+                    const confirmation = `Got it: ${items}, KSh ${parseResult.sale.totalAmount} ✅`;
+                    
+                    const replyResponse = await whatsappService.sendMessage(from, confirmation);
+                    if (!replyResponse.success) {
+                      console.error('Failed to send confirmation reply:', replyResponse.error);
+                    }
+                  } else {
+                    // Send error message
+                    const errorReply = await whatsappService.sendMessage(
+                      from,
+                      `Sorry, I couldn't save that sale. Error: ${recordResult.error}`
+                    );
+                    if (!errorReply.success) {
+                      console.error('Failed to send error reply:', errorReply.error);
+                    }
+                  }
+                } else {
+                  console.error('Failed to get/create business:', businessResult.error);
+                }
+              } else {
+                // Not a sales message or parsing failed
+                const fallbackReply = await whatsappService.sendMessage(
+                  from,
+                  `Got your message: ${messageText}\n\n(Send sales like "2 sodas for 100" to log them)`
+                );
+                if (!fallbackReply.success) {
+                  console.error('Failed to send fallback reply:', fallbackReply.error);
+                }
               }
             }
           }

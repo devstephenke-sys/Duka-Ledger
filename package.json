@@ -15,17 +15,17 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "^7.10.0",
+    "@anthropic-ai/sdk": "^0.129.0",
     "dotenv": "^18.0.4",
     "express": "^5.2.1"
   },
   "devDependencies": {
+    "@prisma/client": "^6.19.3",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.3",
     "@types/supertest": "^7.2.1",
     "@vitest/ui": "^5.0.2",
-    "prisma": "^7.10.0",
+    "prisma": "^6.19.3",
     "supertest": "^7.3.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
