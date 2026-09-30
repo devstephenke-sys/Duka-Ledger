@@ -9,10 +9,10 @@ node_modules/
 # Build output
 dist/
 build/
-*.js
-*.js.map
-*.d.ts
-*.d.ts.map
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
 
 # Prisma generated files
 /prisma/migrations/
