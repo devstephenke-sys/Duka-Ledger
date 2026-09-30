@@ -34,10 +34,11 @@ router.post('/whatsapp', async (req, res) => {
     console.log('Received WhatsApp webhook:', JSON.stringify(payload, null, 2));
 
     // Verify webhook signature (optional but recommended for production)
+    // TODO: Configure WHATSAPP_APP_SECRET and enable signature verification for production
     const signature = req.headers['x-hub-signature-256'] as string;
-    if (signature) {
-      const verifyToken = process.env['WHATSAPP_WEBHOOK_VERIFY_TOKEN'];
-      const hmac = crypto.createHmac('sha256', verifyToken || '');
+    if (signature && process.env['WHATSAPP_APP_SECRET']) {
+      const appSecret = process.env['WHATSAPP_APP_SECRET'];
+      const hmac = crypto.createHmac('sha256', appSecret);
       hmac.update(JSON.stringify(req.body));
       const expectedSignature = `sha256=${hmac.digest('hex')}`;
       
