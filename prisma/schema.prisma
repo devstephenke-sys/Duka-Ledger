@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Business {
+  id              String   @id @default(uuid())
+  owner_name      String
+  owner_phone     String   @unique
+  till_number     String?
+  paybill_number  String?
+  created_at      DateTime @default(now())
+  products        Product[]
+  sales           Sale[]
+  mpesa_txns      MpesaTxn[]
+  debts           Debt[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  business_id String
+  name        String
+  unit_price  Decimal  @db.Decimal(10, 2)
+  stock_qty   Int      @default(0)
+  business    Business @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  sales       Sale[]
+  created_at  DateTime @default(now())
+}
+
+model Sale {
+  id          String    @id @default(uuid())
+  business_id String
+  product_id  String?
+  description String
+  amount      Decimal   @db.Decimal(10, 2)
+  quantity    Int?
+  raw_message String
+  source      Source    @default(MANUAL)
+  created_at  DateTime  @default(now())
+  business    Business  @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  product     Product?  @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  @@index([business_id, created_at])
+}
+
+model MpesaTxn {
+  id              String    @id @default(uuid())
+  business_id     String
+  mpesa_receipt   String    @unique
+  amount          Decimal   @db.Decimal(10, 2)
+  payer_phone     String
+  txn_time        DateTime
+  matched_sale_id String?
+  raw_payload     Json
+  business        Business  @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  created_at      DateTime  @default(now())
+  @@index([business_id, txn_time])
+  @@index([matched_sale_id])
+}
+
+model Debt {
+  id              String      @id @default(uuid())
+  business_id     String
+  customer_name   String
+  customer_phone  String?
+  amount_owed     Decimal     @db.Decimal(10, 2)
+  status          DebtStatus  @default(OPEN)
+  created_at      DateTime    @default(now())
+  settled_at      DateTime?
+  business        Business    @relation(fields: [business_id], references: [id], onDelete: Cascade)
+}
+
+enum Source {
+  MANUAL
+  MPESA_MATCHED
+}
+
+enum DebtStatus {
+  OPEN
+  SETTLED
+}
