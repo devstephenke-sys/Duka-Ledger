@@ -11,7 +11,7 @@ class WhatsAppService {
   constructor() {
     this.phoneNumberId = process.env['WHATSAPP_PHONE_NUMBER_ID'] || '';
     this.accessToken = process.env['WHATSAPP_ACCESS_TOKEN'] || '';
-    this.apiUrl = `https://graph.facebook.com/v25.0/${this.phoneNumberId}/messages`;
+    this.apiUrl = `https://graph.facebook.com/v26.0/${this.phoneNumberId}/messages`;
   }
 
   async sendMessage(to: string, text: string): Promise<WhatsAppResponse> {
