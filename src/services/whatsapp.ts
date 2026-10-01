@@ -21,14 +21,17 @@ class WhatsAppService {
         return { success: false, error: 'WhatsApp credentials not configured' };
       }
 
+      // Ensure phone number has + prefix
+      const formattedTo = to.startsWith('+') ? to : `+${to}`;
+
       const payload = {
         messaging_product: 'whatsapp',
-        to: to,
+        to: formattedTo,
         type: 'text',
         text: { body: text },
       };
 
-      console.log('Sending WhatsApp message to:', to);
+      console.log('Sending WhatsApp message to:', formattedTo);
       console.log('Using Phone Number ID:', this.phoneNumberId);
       console.log('API URL:', this.apiUrl);
       console.log('Payload:', JSON.stringify(payload, null, 2));
