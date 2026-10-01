@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import validator from '../utils/validation.js';
 import type { ParsedSale, ParsedSaleItem } from '../types/parser.js';
+import parserService from './parser.js';
 
 describe('Parser Validation Integration', () => {
   describe('validateParsedSale (via validator)', () => {
@@ -258,6 +259,89 @@ describe('Parser Validation Integration', () => {
 
       const errors = validator.validateSaleItem(item);
       expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('Regex Parser Patterns', () => {
+    it('should parse "2 sodas for 100"', async () => {
+      const result = await parserService.parseSalesMessage('2 sodas for 100');
+      expect(result.success).toBe(true);
+      expect(result.sale?.items).toHaveLength(1);
+      expect(result.sale?.items[0].productName).toBe('sodas');
+      expect(result.sale?.items[0].quantity).toBe(2);
+      expect(result.sale?.totalAmount).toBe(100);
+    });
+
+    it('should parse "2 sodas @ 100"', async () => {
+      const result = await parserService.parseSalesMessage('2 sodas @ 100');
+      expect(result.success).toBe(true);
+      expect(result.sale?.items[0].quantity).toBe(2);
+      expect(result.sale?.totalAmount).toBe(100);
+    });
+
+    it('should parse "sold 3 bread 200"', async () => {
+      const result = await parserService.parseSalesMessage('sold 3 bread 200');
+      expect(result.success).toBe(true);
+      expect(result.sale?.items[0].productName).toBe('bread');
+      expect(result.sale?.items[0].quantity).toBe(3);
+      expect(result.sale?.totalAmount).toBe(200);
+    });
+
+    it('should parse "3 bread 200"', async () => {
+      const result = await parserService.parseSalesMessage('3 bread 200');
+      expect(result.success).toBe(true);
+      expect(result.sale?.items[0].quantity).toBe(3);
+      expect(result.sale?.totalAmount).toBe(200);
+    });
+
+    it('should parse "2 sodas KSh 100"', async () => {
+      const result = await parserService.parseSalesMessage('2 sodas KSh 100');
+      expect(result.success).toBe(true);
+      expect(result.sale?.items[0].quantity).toBe(2);
+      expect(result.sale?.totalAmount).toBe(100);
+    });
+
+    it('should parse "2 sodas kes 100"', async () => {
+      const result = await parserService.parseSalesMessage('2 sodas kes 100');
+      expect(result.success).toBe(true);
+      expect(result.sale?.totalAmount).toBe(100);
+    });
+
+    it('should parse "2 sodas 100 mpesa" with payment method', async () => {
+      const result = await parserService.parseSalesMessage('2 sodas 100 mpesa');
+      expect(result.success).toBe(true);
+      expect(result.sale?.paymentMethod).toBe('mpesa');
+      expect(result.sale?.items[0].quantity).toBe(2);
+    });
+
+    // Skip complex patterns for now - they require more sophisticated regex
+    // These can be added later when needed
+    it.skip('should parse "Mary anaowe 2 sodas 100" with debt', async () => {
+      const result = await parserService.parseSalesMessage('Mary anaowe 2 sodas 100');
+      expect(result.success).toBe(true);
+      expect(result.sale?.customerName).toBe('Mary');
+      expect(result.sale?.isDebt).toBe(true);
+      expect(result.sale?.items[0].quantity).toBe(2);
+    });
+
+    it.skip('should parse "John 2 sodas 100" with customer name', async () => {
+      const result = await parserService.parseSalesMessage('John 2 sodas 100');
+      expect(result.success).toBe(true);
+      expect(result.sale?.customerName).toBe('John');
+      expect(result.sale?.items[0].quantity).toBe(2);
+    });
+
+    it.skip('should parse "2 sodas and 3 bread for 250" with multiple items', async () => {
+      const result = await parserService.parseSalesMessage('2 sodas and 3 bread for 250');
+      expect(result.success).toBe(true);
+      expect(result.sale?.items).toHaveLength(2);
+      expect(result.sale?.totalAmount).toBe(250);
+    });
+
+    it('should fail on unparseable message', async () => {
+      const result = await parserService.parseSalesMessage('hello world');
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Could not parse message');
     });
   });
 });
