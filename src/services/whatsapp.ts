@@ -24,14 +24,18 @@ class WhatsAppService {
       // Ensure phone number has + prefix
       const formattedTo = to.startsWith('+') ? to : `+${to}`;
 
+      // TEMPORARY: Force test recipient for debugging
+      const testRecipient = '+254745534836'; // Number that worked in Graph API Explorer
+      const finalTo = testRecipient; // Use this for now to test
+
       const payload = {
         messaging_product: 'whatsapp',
-        to: formattedTo,
+        to: finalTo,
         type: 'text',
         text: { body: text },
       };
 
-      console.log('Sending WhatsApp message to:', formattedTo);
+      console.log('Sending WhatsApp message to:', finalTo);
       console.log('Using Phone Number ID:', this.phoneNumberId);
       console.log('API URL:', this.apiUrl);
       console.log('Payload:', JSON.stringify(payload, null, 2));
