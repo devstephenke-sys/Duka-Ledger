@@ -21,18 +21,25 @@ class WhatsAppService {
         return { success: false, error: 'WhatsApp credentials not configured' };
       }
 
+      const payload = {
+        messaging_product: 'whatsapp',
+        to: to,
+        type: 'text',
+        text: { body: text },
+      };
+
+      console.log('Sending WhatsApp message to:', to);
+      console.log('Using Phone Number ID:', this.phoneNumberId);
+      console.log('API URL:', this.apiUrl);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+
       const response = await fetch(this.apiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          messaging_product: 'whatsapp',
-          to: to,
-          type: 'text',
-          text: { body: text },
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
